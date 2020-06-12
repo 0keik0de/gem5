@@ -65,7 +65,7 @@ class IntOp : public PowerStaticInst
 
     /* Compute the CR (condition register) field using signed comparison */
     inline uint32_t
-    makeCRField(int32_t a, int32_t b, uint32_t xerSO) const
+    makeCRField(int64_t a, int64_t b, uint32_t xerSO) const
     {
         uint32_t c = xerSO;
 
@@ -76,9 +76,21 @@ class IntOp : public PowerStaticInst
         return c;
     }
 
+    inline uint32_t
+    makeCRField(int64_t a, int32_t b, uint32_t xerSO) const
+    {
+        return makeCRField(a, (int64_t)b, xerSO);
+    }
+
+    inline uint32_t
+    makeCRField(int32_t a, int32_t b, uint32_t xerSO) const
+    {
+        return makeCRField((int64_t)a, (int64_t)b, xerSO);
+    }
+
     /* Compute the CR (condition register) field using unsigned comparison */
     inline uint32_t
-    makeCRField(uint32_t a, uint32_t b, uint32_t xerSO) const
+    makeCRField(uint64_t a, uint64_t b, uint32_t xerSO) const
     {
         uint32_t c = xerSO;
 
@@ -87,6 +99,18 @@ class IntOp : public PowerStaticInst
         else if (a > b) { c += 0x4; }
         else            { c += 0x2; }
         return c;
+    }
+
+    inline uint32_t
+    makeCRField(uint64_t a, uint32_t b, uint32_t xerSO) const
+    {
+        return makeCRField(a, (uint64_t)b, xerSO);
+    }
+
+    inline uint32_t
+    makeCRField(uint32_t a, uint32_t b, uint32_t xerSO) const
+    {
+        return makeCRField((uint64_t)a, (uint64_t)b, xerSO);
     }
 
     std::string generateDisassembly(
