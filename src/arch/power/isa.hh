@@ -35,6 +35,7 @@
 #include "arch/power/types.hh"
 #include "base/logging.hh"
 #include "cpu/reg_class.hh"
+#include "debug/MiscRegs.hh"
 #include "sim/sim_object.hh"
 
 struct PowerISAParams;
@@ -60,30 +61,60 @@ class ISA : public BaseISA
     RegVal
     readMiscRegNoEffect(int misc_reg) const
     {
-        fatal("Power does not currently have any misc regs defined\n");
-        return dummy;
+        assert(misc_reg < NumMiscRegs);
+        int flatIndex = flattenMiscIndex(misc_reg);
+        auto val = miscRegs[flatIndex];
+        DPRINTF(MiscRegs, "Reading misc reg %d (%s) as %#x.\n", misc_reg,
+                miscRegName[flatIndex], val);
+        return val;
     }
 
     RegVal
     readMiscReg(int misc_reg)
     {
-        fatal("Power does not currently have any misc regs defined\n");
-        return dummy;
+        return readMiscRegNoEffect(misc_reg);
     }
 
     void
     setMiscRegNoEffect(int misc_reg, RegVal val)
     {
-        fatal("Power does not currently have any misc regs defined\n");
+        assert(misc_reg < NumMiscRegs);
+        int flatIndex = flattenMiscIndex(misc_reg);
+        DPRINTF(MiscRegs, "Setting misc reg %d (%s) to %#x.\n", misc_reg,
+                miscRegName[flatIndex], val);
+        miscRegs[flatIndex] = val;
     }
 
     void
     setMiscReg(int misc_reg, RegVal val)
     {
-        fatal("Power does not currently have any misc regs defined\n");
+        return setMiscRegNoEffect(misc_reg, val);
     }
 
-    RegId flattenRegId(const RegId& regId) const { return regId; }
+    RegId
+    flattenRegId(const RegId& regId) const
+    {
+        switch (regId.classValue()) {
+            case IntRegClass:
+                return RegId(IntRegClass, flattenIntIndex(regId.index()));
+            case FloatRegClass:
+                return RegId(FloatRegClass, flattenFloatIndex(regId.index()));
+            case VecRegClass:
+                return RegId(VecRegClass, flattenVecIndex(regId.index()));
+            case VecElemClass:
+                return RegId(VecElemClass, flattenVecElemIndex(regId.index()),
+                             regId.elemIndex());
+            case VecPredRegClass:
+                return RegId(VecPredRegClass,
+                             flattenVecPredIndex(regId.index()));
+            case CCRegClass:
+                return RegId(CCRegClass, flattenCCIndex(regId.index()));
+            case MiscRegClass:
+                return RegId(MiscRegClass, flattenMiscIndex(regId.index()));
+        }
+
+        return RegId();
+    }
 
     int
     flattenIntIndex(int reg) const

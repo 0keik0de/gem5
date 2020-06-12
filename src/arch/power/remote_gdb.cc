@@ -182,10 +182,10 @@ RemoteGDB::PowerGdbRegCache::getRegs(ThreadContext *context)
 
     r.pc = htobe((uint32_t)context->pcState().pc());
     r.msr = 0; // Is MSR modeled?
-    r.cr = htobe((uint32_t)context->readIntReg(INTREG_CR));
-    r.lr = htobe((uint32_t)context->readIntReg(INTREG_LR));
-    r.ctr = htobe((uint32_t)context->readIntReg(INTREG_CTR));
-    r.xer = htobe((uint32_t)context->readIntReg(INTREG_XER));
+    r.cr = htobe((uint32_t)context->readMiscReg(MISCREG_CR));
+    r.lr = htobe((uint32_t)context->readMiscReg(MISCREG_LR));
+    r.ctr = htobe((uint32_t)context->readMiscReg(MISCREG_CTR));
+    r.xer = htobe((uint32_t)context->readMiscReg(MISCREG_XER));
 }
 
 void
@@ -201,10 +201,10 @@ RemoteGDB::PowerGdbRegCache::setRegs(ThreadContext *context) const
 
     context->pcState(betoh(r.pc));
     // Is MSR modeled?
-    context->setIntReg(INTREG_CR, betoh(r.cr));
-    context->setIntReg(INTREG_LR, betoh(r.lr));
-    context->setIntReg(INTREG_CTR, betoh(r.ctr));
-    context->setIntReg(INTREG_XER, betoh(r.xer));
+    context->setMiscReg(MISCREG_CR, betoh(r.cr));
+    context->setMiscReg(MISCREG_LR, betoh(r.lr));
+    context->setMiscReg(MISCREG_CTR, betoh(r.ctr));
+    context->setMiscReg(MISCREG_XER, betoh(r.xer));
 }
 
 BaseGdbRegCache*

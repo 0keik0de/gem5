@@ -70,13 +70,13 @@ struct Result<PowerProcess::SyscallABI, SyscallReturn>
         if (ret.suppressed() || ret.needsRetry())
             return;
 
-        PowerISA::Cr cr = tc->readIntReg(PowerISA::INTREG_CR);
+        PowerISA::Cr cr = tc->readMiscReg(PowerISA::MISCREG_CR);
         if (ret.successful()) {
             cr.cr0.so = 0;
         } else {
             cr.cr0.so = 1;
         }
-        tc->setIntReg(PowerISA::INTREG_CR, cr);
+        tc->setMiscReg(PowerISA::MISCREG_CR, cr);
         tc->setIntReg(PowerISA::ReturnValueReg, ret.encodedValue());
     }
 };

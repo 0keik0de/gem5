@@ -61,13 +61,13 @@ def operands {{
     'NIA': ('PCState', 'ud', 'npc', (None, None, 'IsControl'), 9),
 
     # Control registers
-    'CR': ('IntReg', 'uw', 'INTREG_CR', 'IsInteger', 9),
-    'LR': ('IntReg', 'ud', 'INTREG_LR', 'IsInteger', 9),
-    'CTR': ('IntReg', 'ud', 'INTREG_CTR', 'IsInteger', 9),
-    'XER': ('IntReg', 'uw', 'INTREG_XER', 'IsInteger', 9),
+    'CR': ('ControlReg', 'uw', 'MISCREG_CR', 'IsInteger', 9),
+    'XER': ('ControlReg', 'uw', 'MISCREG_XER', 'IsInteger', 9),
+    'LR': ('ControlReg', 'ud', 'MISCREG_LR', 'IsInteger', 9),
+    'CTR': ('ControlReg', 'ud', 'MISCREG_CTR', 'IsInteger', 9),
 
-    # Setting as IntReg so things are stored as an integer, not double
-    'FPSCR': ('IntReg', 'uw', 'INTREG_FPSCR', 'IsFloating', 9),
+    # Setting as ControlReg so things are stored as an integer, not double
+    'FPSCR': ('ControlReg', 'uw', 'MISCREG_FPSCR', 'IsFloating', 9),
 
     # Registers for linked loads and stores
     'Rsv': ('IntReg', 'uw', 'INTREG_RSV', 'IsInteger', 9),
