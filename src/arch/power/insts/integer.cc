@@ -303,7 +303,10 @@ IntLogicOp::generateDisassembly(
     } else if (!myMnemonic.compare("extsb") ||
                !myMnemonic.compare("extsh") ||
                !myMnemonic.compare("extsw") ||
-               !myMnemonic.compare("cntlzw")) {
+               !myMnemonic.compare("cntlzw") ||
+               !myMnemonic.compare("cntlzd") ||
+               !myMnemonic.compare("cnttzw") ||
+               !myMnemonic.compare("cnttzd")) {
         printSecondSrc = false;
     }
 

@@ -500,6 +500,9 @@ decode PO default Unknown::unknown() {
             922: extsh({{ Ra = Rs_sh; }}, true);
             986: extsw({{ Ra = Rs_sw; }}, true);
             26: cntlzw({{ Ra = findLeadingZeros(Rs_uw); }}, true);
+            58: cntlzd({{ Ra = findLeadingZeros(Rs); }}, true);
+            538: cnttzw({{ Ra = findTrailingZeros(Rs_uw); }}, true);
+            570: cnttzd({{ Ra = findTrailingZeros(Rs); }}, true);
 
             508: cmpb({{
                 uint64_t mask = 0xff;
