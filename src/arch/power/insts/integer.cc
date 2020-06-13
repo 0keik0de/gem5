@@ -50,12 +50,14 @@ IntOp::generateDisassembly(Addr pc, const Loader::SymbolTable *symtab) const
                !myMnemonic.compare("mtxer") ||
                !myMnemonic.compare("mtlr")  ||
                !myMnemonic.compare("mtctr") ||
-               !myMnemonic.compare("cmpi")) {
+               !myMnemonic.compare("cmpi")  ||
+               !myMnemonic.compare("mttar")) {
         printDest = false;
     } else if (!myMnemonic.compare("mfcr")  ||
                !myMnemonic.compare("mfxer") ||
                !myMnemonic.compare("mflr")  ||
-               !myMnemonic.compare("mfctr")) {
+               !myMnemonic.compare("mfctr") ||
+               !myMnemonic.compare("mftar")) {
         printSrcs = false;
     }
 
