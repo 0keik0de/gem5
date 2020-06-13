@@ -584,7 +584,10 @@ decode PO default Unknown::unknown() {
                 }
                 Ra = res;
             }});
+        }
 
+        // Integer instructions with a shift value.
+        format IntShiftOp {
             24: slw({{
                 if (Rb & 0x20) {
                     Ra = 0;
@@ -602,65 +605,46 @@ decode PO default Unknown::unknown() {
             }});
 
             792: sraw({{
-                bool shiftSetCA = false;
                 int32_t s = Rs;
                 if (Rb == 0) {
                     Ra = Rs;
-                    shiftSetCA = true;
+                    setCA = true;
                 } else if (Rb & 0x20) {
                     if (s < 0) {
                         Ra = (uint32_t)-1;
                         if (s & 0x7fffffff) {
-                            shiftSetCA = true;
+                            setCA = true;
                         } else {
-                            shiftSetCA = false;
+                            setCA = false;
                         }
                     } else {
                         Ra = 0;
-                        shiftSetCA = false;
+                        setCA = false;
                     }
                 } else {
                     Ra = s >> (Rb & 0x1f);
                     if (s < 0 && (s << (32 - (Rb & 0x1f))) != 0) {
-                        shiftSetCA = true;
+                        setCA = true;
                     } else {
-                        shiftSetCA = false;
+                        setCA = false;
                     }
                 }
-                Xer xer1 = XER;
-                if (shiftSetCA) {
-                    xer1.ca = 1;
-                } else {
-                    xer1.ca = 0;
-                }
-                XER = xer1;
-            }});
-        }
+            }}, true);
 
-        // Integer logic instructions with a shift value.
-        format IntShiftOp {
             824: srawi({{
-                bool shiftSetCA = false;
                 if (sh == 0) {
                     Ra = Rs;
-                    shiftSetCA = false;
+                    setCA = false;
                 } else {
                     int32_t s = Rs;
                     Ra = s >> sh;
                     if (s < 0 && (s << (32 - sh)) != 0) {
-                        shiftSetCA = true;
+                        setCA = true;
                     } else {
-                        shiftSetCA = false;
+                        setCA = false;
                     }
                 }
-                Xer xer1 = XER;
-                if (shiftSetCA) {
-                    xer1.ca = 1;
-                } else {
-                    xer1.ca = 0;
-                }
-                XER = xer1;
-            }});
+            }}, true);
         }
 
         format StoreIndexOp {
