@@ -246,14 +246,17 @@ decode PO default Unknown::unknown() {
         // Ra and Rb are source registers, Rt is the destintation.
         format LoadIndexOp {
             87: lbzx({{ Rt = Mem_ub; }});
+            52: lbarx({{ Rt = Mem_ub; Rsv = 1; RsvLen = 1; RsvAddr = EA; }});
             279: lhzx({{ Rt = Mem_uh; }});
             343: lhax({{ Rt = Mem_sh; }});
+            116: lharx({{ Rt = Mem_uh; Rsv = 1; RsvLen = 2; RsvAddr = EA; }});
             790: lhbrx({{ Rt = swap_byte(Mem_uh); }});
             23: lwzx({{ Rt = Mem_uw; }});
             341: lwax({{ Rt = Mem_sw; }});
             20: lwarx({{ Rt = Mem_uw; Rsv = 1; RsvLen = 4; RsvAddr = EA; }});
             534: lwbrx({{ Rt = swap_byte(Mem_uw); }});
             21: ldx({{ Rt = Mem; }});
+            84: ldarx({{ Rt = Mem_ud; Rsv = 1; RsvLen = 8; RsvAddr = EA; }});
             532: ldbrx({{ Rt = swap_byte(Mem); }});
             535: lfsx({{ Ft_sf = Mem_sf; }});
             599: lfdx({{ Ft = Mem_df; }});
@@ -273,7 +276,39 @@ decode PO default Unknown::unknown() {
 
         format StoreIndexOp {
             215: stbx({{ Mem_ub = Rs_ub; }});
+            694: stbcx({{
+                bool store_performed = false;
+                Mem_ub = Rs_ub;
+                if (Rsv) {
+                    if (RsvLen == 1) {
+                        if (RsvAddr == EA) {
+                            store_performed = true;
+                        }
+                    }
+                }
+                Xer xer = XER;
+                Cr cr = CR;
+                cr.cr0 = ((store_performed ? 0x2 : 0x0) | xer.so);
+                CR = cr;
+                Rsv = 0;
+            }});
             407: sthx({{ Mem_uh = Rs_uh; }});
+            726: sthcx({{
+                bool store_performed = false;
+                Mem_uh = Rs_uh;
+                if (Rsv) {
+                    if (RsvLen == 2) {
+                        if (RsvAddr == EA) {
+                            store_performed = true;
+                        }
+                    }
+                }
+                Xer xer = XER;
+                Cr cr = CR;
+                cr.cr0 = ((store_performed ? 0x2 : 0x0) | xer.so);
+                CR = cr;
+                Rsv = 0;
+            }});
             918: sthbrx({{ Mem_uh = swap_byte(Rs_uh); }});
             151: stwx({{ Mem_uw = Rs_uw; }});
             150: stwcx({{
@@ -294,6 +329,22 @@ decode PO default Unknown::unknown() {
             }});
             662: stwbrx({{ Mem_uw = swap_byte(Rs_uw); }});
             149: stdx({{ Mem = Rs }});
+            214: stdcx({{
+                bool store_performed = false;
+                Mem = Rs;
+                if (Rsv) {
+                    if (RsvLen == 8) {
+                        if (RsvAddr == EA) {
+                            store_performed = true;
+                        }
+                    }
+                }
+                Xer xer = XER;
+                Cr cr = CR;
+                cr.cr0 = ((store_performed ? 0x2 : 0x0) | xer.so);
+                CR = cr;
+                Rsv = 0;
+            }});
             660: stdbrx({{ Mem = swap_byte(Rs); }});
         }
 
