@@ -142,6 +142,39 @@ class IntImmOp : public IntOp
 
 
 /**
+ * Class for integer arithmetic operations.
+ */
+class IntArithOp : public IntOp
+{
+  protected:
+
+    /// Constructor
+    IntArithOp(const char *mnem, MachInst _machInst, OpClass __opClass)
+      : IntOp(mnem, _machInst, __opClass)
+    {
+    }
+};
+
+
+/**
+ * Class for integer immediate arithmetic operations.
+ */
+class IntImmArithOp : public IntArithOp
+{
+  protected:
+
+    int32_t simm;
+
+    /// Constructor
+    IntImmArithOp(const char *mnem, MachInst _machInst, OpClass __opClass)
+      : IntArithOp(mnem, _machInst, __opClass),
+        simm((int16_t)machInst.si)
+    {
+    }
+};
+
+
+/**
  * Class for integer operations with a shift.
  */
 class IntShiftOp : public IntOp

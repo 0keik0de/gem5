@@ -172,26 +172,34 @@ decode PO default Unknown::unknown() {
     }
 
     format IntImmArithCheckRaOp {
-        14: addi({{ Rt = Ra + imm; }},
-                 {{ Rt = imm }});
-
-        15: addis({{ Rt = Ra + (imm << 16); }},
-                  {{ Rt = imm << 16; }});
+        14: addi({{ Rt = Ra + simm; }},
+                 {{ Rt = simm }});
+        15: addis({{ Rt = Ra + (simm << 16); }},
+                  {{ Rt = simm << 16; }});
     }
 
     format IntImmArithOp {
-        12: addic({{ uint32_t src = Ra; Rt = src + imm; }},
-                  [computeCA]);
+        12: addic({{
+            uint64_t src = Ra;
+            Rt = src + simm;
+        }},
+        true);
 
-        13: addic_({{ uint32_t src = Ra; Rt = src + imm; }},
-                   [computeCA, computeCR0]);
+        13: addic_({{
+            uint64_t src = Ra;
+            Rt = src + simm;
+        }},
+        true, true);
 
-        8: subfic({{ int32_t src = ~Ra; Rt = src + imm + 1; }},
-                  [computeCA]);
+        8: subfic({{
+            uint64_t src = ~Ra;
+            Rt = src + simm + 1;
+        }},
+        true);
 
         7: mulli({{
             int32_t src = Ra_sw;
-            int64_t prod = src * imm;
+            int64_t prod = src * simm;
             Rt = (uint32_t)prod;
         }});
     }
@@ -508,11 +516,11 @@ decode PO default Unknown::unknown() {
                 104: neg({{ ~Ra }}, {{ 1 }});
                 138: adde({{ Ra }}, {{ Rb }}, {{ xer.ca }},
                           true);
-                234: addme({{ Ra }}, {{ (uint32_t)-1 }}, {{ xer.ca }},
+                234: addme({{ Ra }}, {{ -1ULL }}, {{ xer.ca }},
                            true);
                 136: subfe({{ ~Ra }}, {{ Rb }}, {{ xer.ca }},
                            true);
-                232: subfme({{ ~Ra }}, {{ (uint32_t)-1 }}, {{ xer.ca }},
+                232: subfme({{ ~Ra }}, {{ -1ULL }}, {{ xer.ca }},
                             true);
                 202: addze({{ Ra }}, {{ xer.ca }},
                            computeCA = true);
@@ -522,21 +530,22 @@ decode PO default Unknown::unknown() {
 
             // Arithmetic instructions all use source registers Ra and Rb,
             // with destination register Rt.
-            format IntArithOp {
+            format IntArithCheckRcOp {
                 75: mulhw({{
                     int64_t prod = Ra_sd * Rb_sd;
                     Rt = prod >> 32;
                 }});
+
                 11: mulhwu({{
                     uint64_t prod = Ra_ud * Rb_ud;
                     Rt = prod >> 32;
                 }});
-                235: mullw({{ int64_t prod = Ra_sd * Rb_sd; Rt = prod; }});
-                747: mullwo({{
-                    int64_t src1 = Ra_sd;
-                    int64_t src2 = Rb;
-                    int64_t prod = src1 * src2;
-                    Rt = prod;
+
+                235: mullw({{
+                    int64_t prod = Ra_sd * Rb_sd; Rt = prod;
+                    if (prod != (int32_t)prod) {
+                        setOV = true;
+                    }
                 }},
                 true);
 
@@ -548,18 +557,7 @@ decode PO default Unknown::unknown() {
                         Rt = src1 / src2;
                     } else {
                         Rt = 0;
-                    }
-                }});
-
-                1003: divwo({{
-                    int32_t src1 = Ra_sw;
-                    int32_t src2 = Rb_sw;
-                    if ((src1 != 0x80000000 || src2 != 0xffffffff)
-                        && src2 != 0) {
-                        Rt = src1 / src2;
-                    } else {
-                        Rt = 0;
-                        divSetOV = true;
+                        setOV = true;
                     }
                 }},
                 true);
@@ -571,18 +569,8 @@ decode PO default Unknown::unknown() {
                         Rt = src1 / src2;
                     } else {
                         Rt = 0;
+                        setOV = true;
                     }
-                }});
-
-                971: divwuo({{
-                  uint32_t src1 = Ra_sw;
-                  uint32_t src2 = Rb_sw;
-                  if (src2 != 0) {
-                      Rt = src1 / src2;
-                  } else {
-                      Rt = 0;
-                      divSetOV = true;
-                  }
                 }},
                 true);
             }
