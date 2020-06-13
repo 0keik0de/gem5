@@ -236,14 +236,22 @@ decode PO default Unknown::unknown() {
 
     format IntImmCompOp {
         11: cmpi({{
-            cr = makeCRField(Ra_sw, (int32_t)simm, xer.so);
-            }});
+            if (length) {
+                cr = makeCRField(Ra_sd, simm, xer.so);
+            } else {
+                cr = makeCRField((int32_t)Ra_sd, simm, xer.so);
+            }
+        }});
     }
 
     format IntImmCompLogicOp {
         10: cmpli({{
-            cr = makeCRField(Ra, (uint32_t)uimm, xer.so);
-            }});
+            if (length) {
+                cr = makeCRField(Ra, uimm, xer.so);
+            } else {
+                cr = makeCRField((uint32_t)Ra, uimm, xer.so);
+            }
+        }});
      }
 
     format IntImmLogicOp {
@@ -436,11 +444,19 @@ decode PO default Unknown::unknown() {
 
         format IntCompOp {
             0: cmp({{
-                cr = makeCRField(Ra_sw, Rb_sw, xer.so);
+                if (length) {
+                    cr = makeCRField(Ra_sd, Rb_sd, xer.so);
+                } else {
+                    cr = makeCRField((int32_t)Ra_sd, (int32_t)Rb_sd, xer.so);
+                }
             }});
 
             32: cmpl({{
-                cr = makeCRField(Ra, Rb, xer.so);
+                if (length) {
+                    cr = makeCRField(Ra, Rb, xer.so);
+                } else {
+                    cr = makeCRField((uint32_t)Ra, (uint32_t)Rb, xer.so);
+                }
             }});
         }
 
