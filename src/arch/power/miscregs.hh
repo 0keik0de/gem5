@@ -40,6 +40,7 @@ enum MiscRegIndex {
     MISCREG_XER,
     MISCREG_LR,
     MISCREG_CTR,
+    MISCREG_TAR,
     NUM_MISCREGS
 };
 
@@ -49,6 +50,7 @@ const char * const miscRegName[NUM_MISCREGS] = {
     "XER",
     "LR",
     "CTR",
+    "TAR"
 };
 
 BitUnion32(Cr)
