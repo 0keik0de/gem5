@@ -487,8 +487,10 @@ BaseSimpleCPU::preExecute()
     SimpleExecContext &t_info = *threadInfo[curThread];
     SimpleThread* thread = t_info.thread;
 
+#if THE_ISA != POWER_ISA
     // maintain $r0 semantics
     thread->setIntReg(ZeroReg, 0);
+#endif
 
     // resets predicates
     t_info.setPredicate(true);
