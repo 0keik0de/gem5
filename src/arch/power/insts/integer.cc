@@ -225,6 +225,58 @@ IntImmArithOp::generateDisassembly(
 
 
 string
+IntDispArithOp::generateDisassembly(
+        Addr pc, const Loader::SymbolTable *symtab) const
+{
+    stringstream ss;
+    bool printSrcs = true;
+    bool printDisp = true;
+    bool negateDisp = false;
+
+    // Generate the correct mnemonic
+    string myMnemonic(mnemonic);
+
+    // Special cases
+    if (!myMnemonic.compare("addpcis")) {
+        printSrcs = false;
+        if (disp == 0) {
+            myMnemonic = "lnia";
+            printDisp = false;
+        } else if (disp < 0) {
+            myMnemonic = "subpcis";
+            negateDisp = true;
+        }
+    }
+
+    ccprintf(ss, "%-10s ", myMnemonic);
+
+    // Print the first destination only
+    if (_numDestRegs > 0) {
+        printReg(ss, _destRegIdx[0]);
+    }
+
+    // Print the source register
+    if (_numSrcRegs > 0 && printSrcs) {
+        if (_numDestRegs > 0) {
+            ss << ", ";
+        }
+        printReg(ss, _srcRegIdx[0]);
+    }
+
+    // Print the displacement
+    if (printDisp) {
+        if (negateDisp) {
+            ss << ", " << -disp;
+        } else {
+            ss << ", " << disp;
+        }
+    }
+
+    return ss.str();
+}
+
+
+string
 IntShiftOp::generateDisassembly(
         Addr pc, const Loader::SymbolTable *symtab) const
 {

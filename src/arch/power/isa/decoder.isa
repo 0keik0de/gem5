@@ -120,6 +120,12 @@ decode PO default Unknown::unknown() {
         format MiscOp {
             150: isync({{ }}, [ IsSerializeAfter ]);
         }
+
+        default: decode DX_XO {
+            format IntDispArithOp {
+                2: addpcis({{ Rt = NIA + (disp << 16); }});
+            }
+        }
     }
 
     17: IntOp::sc({{ xc->syscall(&fault); }},
