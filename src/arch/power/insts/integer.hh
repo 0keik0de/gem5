@@ -443,6 +443,9 @@ class IntCompOp : public IntOp
         field(machInst.bf)
     {
     }
+
+    std::string generateDisassembly(
+            Addr pc, const Loader::SymbolTable *symtab) const override;
 };
 
 
@@ -461,6 +464,9 @@ class IntImmCompOp : public IntCompOp
         simm((int16_t)machInst.si)
     {
     }
+
+    std::string generateDisassembly(
+            Addr pc, const Loader::SymbolTable *symtab) const override;
 };
 
 
@@ -479,6 +485,9 @@ class IntImmCompLogicOp : public IntCompOp
         uimm(machInst.ui)
     {
     }
+
+    std::string generateDisassembly(
+            Addr pc, const Loader::SymbolTable *symtab) const override;
 };
 
 
