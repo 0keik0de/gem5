@@ -128,7 +128,7 @@ decode PO default Unknown::unknown() {
         34: lbz({{ Rt = Mem_ub; }});
         40: lhz({{ Rt = Mem_uh; }});
         42: lha({{ Rt = Mem_sh; }});
-        32: lwz({{ Rt = Mem; }});
+        32: lwz({{ Rt = Mem_uw; }});
     }
 
     58: decode DS_XO {
@@ -141,19 +141,19 @@ decode PO default Unknown::unknown() {
         35: lbzu({{ Rt = Mem_ub; }});
         41: lhzu({{ Rt = Mem_uh; }});
         43: lhau({{ Rt = Mem_sh; }});
-        33: lwzu({{ Rt = Mem; }});
+        33: lwzu({{ Rt = Mem_uw; }});
     }
 
     format StoreDispOp {
         38: stb({{ Mem_ub = Rs_ub; }});
         44: sth({{ Mem_uh = Rs_uh; }});
-        36: stw({{ Mem = Rs; }});
+        36: stw({{ Mem_uw = Rs_uw; }});
     }
 
     format StoreDispUpdateOp {
         39: stbu({{ Mem_ub = Rs_ub; }});
         45: sthu({{ Mem_uh = Rs_uh; }});
-        37: stwu({{ Mem = Rs; }});
+        37: stwu({{ Mem_uw = Rs_uw; }});
     }
 
     format IntImmArithCheckRaOp {
@@ -233,9 +233,9 @@ decode PO default Unknown::unknown() {
             87: lbzx({{ Rt = Mem_ub; }});
             279: lhzx({{ Rt = Mem_uh; }});
             343: lhax({{ Rt = Mem_sh; }});
-            23: lwzx({{ Rt = Mem; }});
+            23: lwzx({{ Rt = Mem_uw; }});
             341: lwax({{ Rt = Mem_sw; }});
-            20: lwarx({{ Rt = Mem_sw; Rsv = 1; RsvLen = 4; RsvAddr = EA; }});
+            20: lwarx({{ Rt = Mem_uw; Rsv = 1; RsvLen = 4; RsvAddr = EA; }});
             535: lfsx({{ Ft_sf = Mem_sf; }});
             599: lfdx({{ Ft = Mem_df; }});
             855: lfiwax({{ Ft_uw = Mem; }});
@@ -245,7 +245,7 @@ decode PO default Unknown::unknown() {
             119: lbzux({{ Rt = Mem_ub; }});
             311: lhzux({{ Rt = Mem_uh; }});
             375: lhaux({{ Rt = Mem_sh; }});
-            55: lwzux({{ Rt = Mem; }});
+            55: lwzux({{ Rt = Mem_uw; }});
             373: lwaux({{ Rt = Mem_sw; }});
             567: lfsux({{ Ft_sf = Mem_sf; }});
             631: lfdux({{ Ft = Mem_df; }});
@@ -254,10 +254,10 @@ decode PO default Unknown::unknown() {
         format StoreIndexOp {
             215: stbx({{ Mem_ub = Rs_ub; }});
             407: sthx({{ Mem_uh = Rs_uh; }});
-            151: stwx({{ Mem = Rs; }});
+            151: stwx({{ Mem_uw = Rs_uw; }});
             150: stwcx({{
                 bool store_performed = false;
-                Mem = Rs;
+                Mem_uw = Rs_uw;
                 if (Rsv) {
                     if (RsvLen == 4) {
                         if (RsvAddr == EA) {
@@ -276,7 +276,7 @@ decode PO default Unknown::unknown() {
         format StoreIndexUpdateOp {
             247: stbux({{ Mem_ub = Rs_ub; }});
             439: sthux({{ Mem_uh = Rs_uh; }});
-            183: stwux({{ Mem = Rs; }});
+            183: stwux({{ Mem_uw = Rs_uw; }});
         }
 
         format IntOp {
