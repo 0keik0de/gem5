@@ -153,6 +153,9 @@ class IntArithOp : public IntOp
       : IntOp(mnem, _machInst, __opClass)
     {
     }
+
+    std::string generateDisassembly(
+            Addr pc, const Loader::SymbolTable *symtab) const override;
 };
 
 
@@ -171,6 +174,9 @@ class IntImmArithOp : public IntArithOp
         simm((int16_t)machInst.si)
     {
     }
+
+    std::string generateDisassembly(
+            Addr pc, const Loader::SymbolTable *symtab) const override;
 };
 
 
