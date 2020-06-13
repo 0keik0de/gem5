@@ -518,6 +518,9 @@ class IntLogicOp : public IntOp
             return 32;
         }
     }
+
+    std::string generateDisassembly(
+            Addr pc, const Loader::SymbolTable *symtab) const override;
 };
 
 
@@ -536,6 +539,9 @@ class IntImmLogicOp : public IntLogicOp
         uimm(machInst.si)
     {
     }
+
+    std::string generateDisassembly(
+            Addr pc, const Loader::SymbolTable *symtab) const override;
 };
 
 

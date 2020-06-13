@@ -287,6 +287,117 @@ IntDispArithOp::generateDisassembly(
 
 
 string
+IntLogicOp::generateDisassembly(
+        Addr pc, const Loader::SymbolTable *symtab) const
+{
+    stringstream ss;
+    bool printSecondSrc = true;
+
+    // Generate the correct mnemonic
+    string myMnemonic(mnemonic);
+
+    // Special cases
+    if (!myMnemonic.compare("or") && _srcRegIdx[0] == _srcRegIdx[1]) {
+        myMnemonic = "mr";
+        printSecondSrc = false;
+    } else if (!myMnemonic.compare("extsb") ||
+               !myMnemonic.compare("extsh") ||
+               !myMnemonic.compare("cntlzw")) {
+        printSecondSrc = false;
+    }
+
+    // Additional characters depending on isa bits being set
+    if (rcSet) myMnemonic = myMnemonic + ".";
+    ccprintf(ss, "%-10s ", myMnemonic);
+
+    // Print the first destination only
+    if (_numDestRegs > 0) {
+        printReg(ss, _destRegIdx[0]);
+    }
+
+    // Print the first source register
+    if (_numSrcRegs > 0) {
+        if (_numDestRegs > 0) {
+            ss << ", ";
+        }
+        printReg(ss, _srcRegIdx[0]);
+
+        // Print the second source register
+        if (printSecondSrc) {
+
+            // If the instruction updates the CR, the destination register
+            // Ra is read and thus, it becomes the second source register
+            // due to its higher precedence over Rb. In this case, it must
+            // be skipped.
+            if (rcSet) {
+                if (_numSrcRegs > 2) {
+                    ss << ", ";
+                    printReg(ss, _srcRegIdx[2]);
+                }
+            } else {
+                if (_numSrcRegs > 1) {
+                    ss << ", ";
+                    printReg(ss, _srcRegIdx[1]);
+                }
+            }
+        }
+    }
+
+    return ss.str();
+}
+
+
+string
+IntImmLogicOp::generateDisassembly(
+        Addr pc, const Loader::SymbolTable *symtab) const
+{
+    stringstream ss;
+    bool printRegs = true;
+
+    // Generate the correct mnemonic
+    string myMnemonic(mnemonic);
+
+    // Special cases
+    if (!myMnemonic.compare("ori") &&
+        _destRegIdx[0].index() == 0 && _srcRegIdx[0].index() == 0) {
+        myMnemonic = "nop";
+        printRegs = false;
+    } else if (!myMnemonic.compare("xori") &&
+               _destRegIdx[0].index() == 0 && _srcRegIdx[0].index() == 0) {
+        myMnemonic = "xnop";
+        printRegs = false;
+    } else if (!myMnemonic.compare("andi_")) {
+        myMnemonic = "andi.";
+    } else if (!myMnemonic.compare("andis_")) {
+        myMnemonic = "andis.";
+    }
+
+    ccprintf(ss, "%-10s ", myMnemonic);
+
+    if (printRegs) {
+
+        // Print the first destination only
+        if (_numDestRegs > 0) {
+            printReg(ss, _destRegIdx[0]);
+        }
+
+        // Print the source register
+        if (_numSrcRegs > 0) {
+            if (_numDestRegs > 0) {
+                ss << ", ";
+            }
+            printReg(ss, _srcRegIdx[0]);
+        }
+
+        // Print the immediate value
+        ss << ", " << uimm;
+    }
+
+     return ss.str();
+}
+
+
+string
 IntCompOp::generateDisassembly(
         Addr pc, const Loader::SymbolTable *symtab) const
 {
