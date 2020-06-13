@@ -571,6 +571,19 @@ decode PO default Unknown::unknown() {
                 Ra = res;
             }});
 
+            252: bpermd({{
+                uint64_t res = 0;
+                for (int i = 0; i < 8; ++i) {
+                    int index = (Rs >> (i * 8)) & 0xff;
+                    if (index < 64) {
+                        if (Rb & (1ULL << (63 - index))) {
+                            res |= 1 << i;
+                        }
+                    }
+                }
+                Ra = res;
+            }});
+
             24: slw({{
                 if (Rb & 0x20) {
                     Ra = 0;
