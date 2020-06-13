@@ -554,6 +554,23 @@ decode PO default Unknown::unknown() {
 
             506: popcntd({{ Ra = popCount(Rs); }});
 
+            154: prtyw({{
+                uint64_t res = Rs;
+                res = res ^ (res >> 16);
+                res = res ^ (res >> 8);
+                res = res & 0x100000001;
+                Ra = res;
+            }});
+
+            186: prtyd({{
+                uint64_t res = Rs;
+                res = res ^ (res >> 32);
+                res = res ^ (res >> 16);
+                res = res ^ (res >> 8);
+                res = res & 0x1;
+                Ra = res;
+            }});
+
             24: slw({{
                 if (Rb & 0x20) {
                     Ra = 0;
