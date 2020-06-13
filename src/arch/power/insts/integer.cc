@@ -585,8 +585,21 @@ IntShiftOp::generateDisassembly(
         Addr pc, const Loader::SymbolTable *symtab) const
 {
     stringstream ss;
+    bool printSecondSrc = true;
+    bool printShift = false;
 
-    ccprintf(ss, "%-10s ", mnemonic);
+    // Generate the correct mnemonic
+    string myMnemonic(mnemonic);
+
+    // Special cases
+    if (!myMnemonic.compare("srawi")) {
+        printSecondSrc = false;
+        printShift = true;
+    }
+
+    // Additional characters depending on isa bits being set
+    if (rcSet) myMnemonic = myMnemonic + ".";
+    ccprintf(ss, "%-10s ", myMnemonic);
 
     // Print the first destination only
     if (_numDestRegs > 0) {
@@ -599,10 +612,32 @@ IntShiftOp::generateDisassembly(
             ss << ", ";
         }
         printReg(ss, _srcRegIdx[0]);
+
+        // Print the second source register
+        if (printSecondSrc) {
+
+            // If the instruction updates the CR, the destination register
+            // Ra is read and thus, it becomes the second source register
+            // due to its higher precedence over Rb. In this case, it must
+            // be skipped.
+            if (rcSet) {
+                if (_numSrcRegs > 2) {
+                    ss << ", ";
+                    printReg(ss, _srcRegIdx[2]);
+                }
+            } else {
+                if (_numSrcRegs > 1) {
+                    ss << ", ";
+                    printReg(ss, _srcRegIdx[1]);
+                }
+            }
+        }
     }
 
-    // Print the shift
-    ss << ", " << sh;
+    // Print the shift value
+    if (printShift) {
+        ss << ", " << shift;
+    }
 
     return ss.str();
 }
