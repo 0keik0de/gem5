@@ -71,7 +71,13 @@ BranchOp::generateDisassembly(
     std::stringstream ss;
     Addr target;
 
-    ccprintf(ss, "%-10s ", mnemonic);
+    // Generate correct mnemonic
+    std::string myMnemonic(mnemonic);
+
+    // Additional characters depending on isa bits being set
+    if (lkSet) myMnemonic = myMnemonic + "l";
+    if (aaSet) myMnemonic = myMnemonic + "a";
+    ccprintf(ss, "%-10s ", myMnemonic);
 
     if (aaSet) {
         target = disp;
@@ -107,7 +113,13 @@ BranchDispCondOp::generateDisassembly(
     std::stringstream ss;
     Addr target;
 
-    ccprintf(ss, "%-10s ", mnemonic);
+    // Generate the correct mnemonic
+    std::string myMnemonic(mnemonic);
+
+    // Additional characters depending on isa bits being set
+    if (lkSet) myMnemonic = myMnemonic + "l";
+    if (aaSet) myMnemonic = myMnemonic + "a";
+    ccprintf(ss, "%-10s ", myMnemonic);
 
     // Print BI and BO fields
     ss << crBit << ", " << opts << ", ";
@@ -142,6 +154,11 @@ BranchRegCondOp::generateDisassembly(
 {
     std::stringstream ss;
 
+    // Generate the correct mnemonic
+    std::string myMnemonic(mnemonic);
+
+    // Additional characters depending on isa bits being set
+    if (lkSet) myMnemonic = myMnemonic + "l";
     ccprintf(ss, "%-10s ", mnemonic);
 
     // Print the BI and BO fields
