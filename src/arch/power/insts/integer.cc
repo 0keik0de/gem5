@@ -120,6 +120,7 @@ IntArithOp::generateDisassembly(
 {
     stringstream ss;
     bool printSecondSrc = true;
+    bool printThirdSrc = false;
 
     // Generate the correct mnemonic
     string myMnemonic(mnemonic);
@@ -131,6 +132,10 @@ IntArithOp::generateDisassembly(
         !myMnemonic.compare("subfze") ||
         !myMnemonic.compare("neg")){
         printSecondSrc = false;
+    } else if (!myMnemonic.compare("maddhd") ||
+               !myMnemonic.compare("maddhdu") ||
+               !myMnemonic.compare("maddld")) {
+        printThirdSrc = true;
     }
 
     // Additional characters depending on isa bits being set
@@ -154,6 +159,12 @@ IntArithOp::generateDisassembly(
         if (_numSrcRegs > 1 && printSecondSrc) {
             ss << ", ";
             printReg(ss, _srcRegIdx[1]);
+
+            // Print the third source register
+            if (_numSrcRegs > 2 && printThirdSrc) {
+                ss << ", ";
+                printReg(ss, _srcRegIdx[2]);
+            }
         }
     }
 
