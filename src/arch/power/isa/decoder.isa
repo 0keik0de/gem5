@@ -249,10 +249,13 @@ decode PO default Unknown::unknown() {
             87: lbzx({{ Rt = Mem_ub; }});
             279: lhzx({{ Rt = Mem_uh; }});
             343: lhax({{ Rt = Mem_sh; }});
+            790: lhbrx({{ Rt = swap_byte(Mem_uh); }});
             23: lwzx({{ Rt = Mem_uw; }});
             341: lwax({{ Rt = Mem_sw; }});
             20: lwarx({{ Rt = Mem_uw; Rsv = 1; RsvLen = 4; RsvAddr = EA; }});
+            534: lwbrx({{ Rt = swap_byte(Mem_uw); }});
             21: ldx({{ Rt = Mem; }});
+            532: ldbrx({{ Rt = swap_byte(Mem); }});
             535: lfsx({{ Ft_sf = Mem_sf; }});
             599: lfdx({{ Ft = Mem_df; }});
             855: lfiwax({{ Ft_uw = Mem; }});
@@ -272,6 +275,7 @@ decode PO default Unknown::unknown() {
         format StoreIndexOp {
             215: stbx({{ Mem_ub = Rs_ub; }});
             407: sthx({{ Mem_uh = Rs_uh; }});
+            918: sthbrx({{ Mem_uh = swap_byte(Rs_uh); }});
             151: stwx({{ Mem_uw = Rs_uw; }});
             150: stwcx({{
                 bool store_performed = false;
@@ -289,7 +293,9 @@ decode PO default Unknown::unknown() {
                 CR = cr;
                 Rsv = 0;
             }});
+            662: stwbrx({{ Mem_uw = swap_byte(Rs_uw); }});
             149: stdx({{ Mem = Rs }});
+            660: stdbrx({{ Mem = swap_byte(Rs); }});
         }
 
         format StoreIndexUpdateOp {
