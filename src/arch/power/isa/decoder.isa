@@ -393,6 +393,28 @@ decode PO default Unknown::unknown() {
             181: stdux({{ Mem = Rs; }});
         }
 
+        format IntArithOp {
+            779: modsw({{
+                int64_t src1 = Ra_sw;
+                int64_t src2 = Rb_sw;
+                if ((src1 != INT32_MIN || src2 != -1) && src2 != 0) {
+                    Rt = src1 % src2;
+                } else {
+                    Rt = 0;
+                }
+            }});
+
+            267: moduw({{
+                uint64_t src1 = Ra_uw;
+                uint64_t src2 = Rb_uw;
+                if (src2 != 0) {
+                    Rt = src1 % src2;
+                } else {
+                    Rt = 0;
+                }
+            }});
+        }
+
         format IntOp {
             0: cmp({{
                 Xer xer = XER;
