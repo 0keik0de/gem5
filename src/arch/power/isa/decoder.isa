@@ -558,6 +558,30 @@ decode PO default Unknown::unknown() {
                 }},
                 true);
 
+                73: mulhd({{
+                    int64_t res;
+                    std::tie(std::ignore, res) = multiply(Ra_sd, Rb_sd);
+                    Rt = res;
+                }});
+
+                9: mulhdu({{
+                    uint64_t res;
+                    std::tie(std::ignore, res) = multiply(Ra, Rb);
+                    Rt = res;
+                }});
+
+                233: mulld({{
+                    int64_t src1 = Ra_sd;
+                    int64_t src2 = Rb_sd;
+                    uint64_t res = src1 * src2;
+                    std::tie(res, std::ignore) = multiply(src1, src2);
+                    if (src1 != 0 && (int64_t)res / src1 != src2) {
+                        setOV = true;
+                    }
+                    Rt = res;
+                }},
+                true);
+
                 491: divw({{
                     int32_t src1 = Ra_sw;
                     int32_t src2 = Rb_sw;
