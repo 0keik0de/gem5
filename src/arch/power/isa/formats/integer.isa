@@ -65,7 +65,7 @@ def template IntRcOeConstructor {{
 
 let {{
 
-readXERCode = 'Xer xer = XER;'
+readXERCode = 'Xer xer M5_VAR_USED = XER;'
 
 setXERCode = 'XER = xer;'
 
