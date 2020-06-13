@@ -36,42 +36,26 @@
 //
 decode PO default Unknown::unknown() {
 
-    18: decode AA {
-
-        // Unconditionally branch relative to PC.
-        format BranchPCRel {
-            0: b({{ NIA = (uint32_t)(CIA + disp); }});
-        }
-
-        // Unconditionally branch to fixed address.
-        format BranchNonPCRel {
-            1: ba({{ NIA = targetAddr; }});
-        }
+    // Unconditionally branch to a PC-relative or absoulute address.
+    format BranchOp {
+        18: b({{ NIA = CIA + disp; }},
+              {{ NIA = disp; }});
     }
 
-    16: decode AA {
-
-        // Conditionally branch relative to PC based on CR and CTR.
-        format BranchPCRelCondCtr {
-            0: bc({{ NIA = (uint32_t)(CIA + disp); }});
-        }
-
-        // Conditionally branch to fixed address based on CR and CTR.
-        format BranchNonPCRelCondCtr {
-            1: bca({{ NIA = targetAddr; }});
-        }
+    // Conditionally branch to a PC-relative or absoulute address based
+    // on CR and CTR.
+    format BranchDispCondOp {
+        16: bc({{ NIA = CIA + disp; }},
+               {{ NIA = disp; }});
     }
 
     19: decode XL_XO {
 
-        // Conditionally branch to address in LR based on CR and CTR.
-        format BranchLrCondCtr {
-           16: bclr({{ NIA = LR & 0xfffffffc; }});
-        }
-
-        // Conditionally branch to address in CTR based on CR.
-        format BranchCtrCond {
-           528: bcctr({{ NIA = CTR & 0xfffffffc; }});
+        // Conditionally branch to an address in a register based on
+        // either CR only or both CR and CTR.
+        format BranchRegCondOp {
+            16: bclr({{ NIA = LR & -4ULL; }}, true, [ IsReturn ]);
+            528: bcctr({{ NIA = CTR & -4ULL; }});
         }
 
         // Condition register manipulation instructions.
