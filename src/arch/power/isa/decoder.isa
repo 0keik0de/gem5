@@ -497,6 +497,7 @@ decode PO default Unknown::unknown() {
             412: orc({{ Ra = Rs | ~Rb; }}, true);
             954: extsb({{ Ra = Rs_sb; }}, true);
             922: extsh({{ Ra = Rs_sh; }}, true);
+            986: extsw({{ Ra = Rs_sw; }}, true);
             26: cntlzw({{ Ra = findLeadingZeros(Rs_uw); }}, true);
 
             508: cmpb({{
