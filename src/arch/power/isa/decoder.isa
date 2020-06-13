@@ -34,7 +34,7 @@
 // I've used the Power ISA Book I v2.06 for instruction formats,
 // opcode numbers, register names, etc.
 //
-decode OPCODE default Unknown::unknown() {
+decode PO default Unknown::unknown() {
 
     18: decode AA {
 
