@@ -133,10 +133,8 @@ decode PO default Unknown::unknown() {
     }
 
     58: decode DS_XO {
-        format LoadDispOp {
-            2: lwa({{ Rt = Mem_sw; }},
-                   {{ EA = Ra + (disp & 0xfffffffc); }},
-                   {{ EA = disp & 0xfffffffc; }});
+        format LoadDispShiftOp {
+            2: lwa({{ Rt = Mem_sw; }});
         }
     }
 
