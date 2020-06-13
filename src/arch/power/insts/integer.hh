@@ -599,18 +599,19 @@ class IntImmLogicOp : public IntLogicOp
 
 
 /**
- * Class for integer operations with a shift.
+ * Class for integer operations with a shift value obtained from
+ * a register or an instruction field.
  */
 class IntShiftOp : public IntOp
 {
   protected:
 
-    uint32_t sh;
+    uint32_t shift;
 
     /// Constructor
     IntShiftOp(const char *mnem, MachInst _machInst, OpClass __opClass)
       : IntOp(mnem, _machInst, __opClass),
-        sh(machInst.sh)
+        shift(machInst.sh)
     {
     }
 
