@@ -279,5 +279,10 @@ PowerProcess::argsInit(int intSize, int pageSize)
 }
 
 const std::vector<int> PowerProcess::SyscallABI::ArgumentRegs = {
-    3, 4, 5, 6, 7, 8
+    ArgumentReg0,
+    ArgumentReg1,
+    ArgumentReg2,
+    ArgumentReg3,
+    ArgumentReg4,
+    ArgumentReg5
 };
