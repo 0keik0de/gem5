@@ -796,3 +796,86 @@ IntRotateOp::generateDisassembly(
 
     return ss.str();
 }
+
+string
+IntConcatRotateOp::generateDisassembly(
+        Addr pc, const Loader::SymbolTable *symtab) const
+{
+    stringstream ss;
+    bool printSecondSrc = false;
+    bool printShift = true;
+    bool printMaskBeg = true;
+
+    // Generate the correct mnemonic
+    string myMnemonic(mnemonic);
+
+    // Special cases
+    if (!myMnemonic.compare("rldicl")) {
+        if (maskBeg == 0) {
+            myMnemonic = "rotldi";
+            printMaskBeg = false;
+        } else if (shift == 0) {
+            myMnemonic = "clrldi";
+            printShift = false;
+        }
+    } else if (!myMnemonic.compare("rldcl")) {
+        if (maskBeg == 0) {
+            myMnemonic = "rotld";
+            printMaskBeg = false;
+        }
+        printSecondSrc = true;
+        printShift = false;
+    } else if (!myMnemonic.compare("rldcr")) {
+        printSecondSrc = true;
+        printShift = false;
+    }
+
+    // Additional characters depending on isa bits being set
+    if (rcSet) myMnemonic = myMnemonic + ".";
+    ccprintf(ss, "%-10s ", myMnemonic);
+
+    // Print the first destination only
+    if (_numDestRegs > 0) {
+        printReg(ss, _destRegIdx[0]);
+    }
+
+    // Print the first source register
+    if (_numSrcRegs > 0) {
+        if (_numDestRegs > 0) {
+            ss << ", ";
+        }
+        printReg(ss, _srcRegIdx[0]);
+
+        // Print the second source register
+        if (printSecondSrc) {
+
+            // If the instruction updates the CR, the destination register
+            // Ra is read and thus, it becomes the second source register
+            // due to its higher precedence over Rb. In this case, it must
+            // be skipped.
+            if (rcSet) {
+                if (_numSrcRegs > 2) {
+                    ss << ", ";
+                    printReg(ss, _srcRegIdx[2]);
+                }
+            } else {
+                if (_numSrcRegs > 1) {
+                    ss << ", ";
+                    printReg(ss, _srcRegIdx[1]);
+                }
+            }
+        }
+    }
+
+    // Print the shift amount
+    if (printShift) {
+        ss << ", " << shift;
+    }
+
+    // Print the mask bound
+    if (printMaskBeg) {
+        ss << ", " << maskBeg;
+    }
+
+    return ss.str();
+}
