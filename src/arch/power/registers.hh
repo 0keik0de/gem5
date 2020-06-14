@@ -85,6 +85,7 @@ const int ArgumentReg1 = 4;
 const int ArgumentReg2 = 5;
 const int ArgumentReg3 = 6;
 const int ArgumentReg4 = 7;
+const int ArgumentReg5 = 8;
 const int FramePointerReg = 31;
 const int StackPointerReg = 1;
 
