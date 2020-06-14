@@ -621,6 +621,28 @@ class IntShiftOp : public IntOp
 
 
 /**
+ * Class for integer shift operations with a shift value obtained from
+ * a register or by concatenating immediates.
+ */
+class IntConcatShiftOp : public IntOp
+{
+  protected:
+
+    uint32_t shift;
+
+    /// Constructor
+    IntConcatShiftOp(const char *mnem, MachInst _machInst, OpClass __opClass)
+      : IntOp(mnem, _machInst, __opClass),
+        shift(((uint32_t)machInst.shn << 5) | machInst.sh)
+    {
+    }
+
+    std::string generateDisassembly(
+            Addr pc, const Loader::SymbolTable *symtab) const override;
+};
+
+
+/**
  * Class for integer rotate operations.
  */
 class IntRotateOp : public IntShiftOp

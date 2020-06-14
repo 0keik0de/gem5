@@ -647,6 +647,52 @@ decode PO default Unknown::unknown() {
             true);
         }
 
+        format IntConcatShiftOp {
+            27: sld({{
+                int64_t shift = Rb_sd;
+                uint64_t res = Rs & ~((shift << 57) >> 63);
+                if (shift != 0) {
+                    shift = shift & 0x3f;
+                    res = res << shift;
+                }
+                Ra = res;
+            }});
+
+            539: srd({{
+                int64_t shift = Rb_sd;
+                uint64_t res = Rs & ~((shift << 57) >> 63);
+                if (shift != 0) {
+                    shift = shift & 0x3f;
+                    res = res >> shift;
+                }
+                Ra = res;
+            }});
+
+            794: srad({{
+                int64_t src = Rs_sd;
+                uint64_t shift = Rb;
+                int64_t res;
+                if ((shift & 0x40) != 0) {
+                    res = src >> 63;
+                    if (res != 0) {
+                        setCA = true;
+                    }
+                } else {
+                    if (shift != 0) {
+                        shift = shift & 0x3f;
+                        res = src >> shift;
+                        if (src < 0 && (src & mask(shift)) != 0) {
+                            setCA = true;
+                        }
+                    } else {
+                        res = src;
+                    }
+                }
+                Ra = res;
+            }},
+            true);
+        }
+
         format StoreIndexOp {
             663: stfsx({{ Mem_sf = Fs_sf; }});
             727: stfdx({{ Mem_df = Fs; }});
@@ -857,33 +903,60 @@ decode PO default Unknown::unknown() {
                 true);
             }
 
-            default: decode XFX_XO {
-                format IntOp {
-                    339: decode SPR {
-                        0x20: mfxer({{ Rt = XER; }});
-                        0x100: mflr({{ Rt = LR; }});
-                        0x120: mfctr({{ Rt = CTR; }});
-                        0x1f9: mftar({{ Rt = TAR; }});
-                    }
-
-                    467: decode SPR {
-                        0x20: mtxer({{ XER = Rs; }});
-                        0x100: mtlr({{ LR = Rs; }});
-                        0x120: mtctr({{ CTR = Rs; }});
-                        0x1f9: mttar({{ TAR = Rs; }});
-                    }
-
-                    144: mtcrf({{
-                        uint32_t mask = 0;
-                        for (int i = 0; i < 8; ++i) {
-                            if (((FXM >> i) & 0x1) == 0x1) {
-                                mask |= 0xf << (4 * i);
+            // These instructions are of XS form and use bits 21 - 29 as XO.
+            default: decode XS_XO {
+                format IntConcatShiftOp {
+                    413: sradi({{
+                        int64_t src = Rs_sd;
+                        if (shift != 0) {
+                            Ra = src >> shift;
+                            if (src < 0 && (src & mask(shift))) {
+                                setCA = true;
                             }
+                        } else {
+                            Ra = src;
                         }
-                        CR = (Rs & mask) | (CR & ~mask);
-                    }});
+                    }},
+                    true);
 
-                    19: mfcr({{ Rt = CR; }});
+                    445: extswsli({{
+                        int64_t src = Rs_sw;
+                        if (shift != 0) {
+                            Ra = src << shift;
+                        } else {
+                            Ra = src;
+                        }
+                    }});
+                }
+
+                default: decode XFX_XO {
+                    format IntOp {
+                        339: decode SPR {
+                            0x20: mfxer({{ Rt = XER; }});
+                            0x100: mflr({{ Rt = LR; }});
+                            0x120: mfctr({{ Rt = CTR; }});
+                            0x1f9: mftar({{ Rt = TAR; }});
+                        }
+
+                        467: decode SPR {
+                            0x20: mtxer({{ XER = Rs; }});
+                            0x100: mtlr({{ LR = Rs; }});
+                            0x120: mtctr({{ CTR = Rs; }});
+                            0x1f9: mttar({{ TAR = Rs; }});
+                        }
+
+                        144: mtcrf({{
+                            uint32_t mask = 0;
+                            for (int i = 0; i < 8; ++i) {
+                                if (((FXM >> i) & 0x1) == 0x1) {
+                                    mask |= 0xf << (4 * i);
+                                }
+                            }
+                            CR = (Rs & mask) | (CR & ~mask);
+                        }});
+
+                        19: mfcr({{ Rt = CR; }});
+                    }
                 }
             }
         }
