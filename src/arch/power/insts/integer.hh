@@ -643,31 +643,33 @@ class IntConcatShiftOp : public IntOp
 
 
 /**
- * Class for integer rotate operations.
+ * Class for integer rotate operations with a shift amount obtained
+ * from a register or an immediate and the first and last bits of a
+ * mask obtained from immediates.
  */
 class IntRotateOp : public IntShiftOp
 {
   protected:
 
-    uint32_t mb;
-    uint32_t me;
     uint32_t fullMask;
+    uint32_t maskBeg;
+    uint32_t maskEnd;
 
     /// Constructor
     IntRotateOp(const char *mnem, MachInst _machInst, OpClass __opClass)
       : IntShiftOp(mnem, _machInst, __opClass),
-        mb(machInst.mb),
-        me(machInst.me)
+        maskBeg(machInst.mb),
+        maskEnd(machInst.me)
     {
-        if (me >= mb) {
-            fullMask = mask(31 - mb, 31 - me);
+        if (maskEnd >= maskBeg) {
+            fullMask = mask(31 - maskBeg, 31 - maskEnd);
         } else {
-            fullMask = ~mask(31 - (me + 1), 31 - (mb - 1));
+            fullMask = ~mask(31 - (maskEnd + 1), 31 - (maskBeg - 1));
         }
     }
 
-    uint32_t
-    rotateValue(uint32_t rs, uint32_t shift) const
+    inline uint32_t
+    rotate(uint32_t rs, uint32_t sh) const
     {
         uint32_t n = shift & 31;
         return (rs << n) | (rs >> (32 - n));
