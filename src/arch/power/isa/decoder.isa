@@ -267,10 +267,27 @@ decode PO default Unknown::unknown() {
     }
 
     format IntRotateOp {
-        21: rlwinm({{ Ra = rotate(Rs, sh) & fullMask; }});
-        23: rlwnm({{ Ra = rotate(Rs, Rb) & fullMask; }});
-        20: rlwimi({{ Ra = (rotate(Rs, sh) & fullMask) |
-                           (Ra & ~fullMask); }});
+        21: rlwinm({{
+            uint64_t res;
+            res = rotate(Rs, shift);
+            res = res & bitmask(maskBeg, maskEnd);
+            Ra = res;
+        }});
+
+        23: rlwnm({{
+            uint64_t res;
+            res = rotate(Rs, Rb);
+            res = res & bitmask(maskBeg, maskEnd);
+            Ra = res;
+        }});
+
+        20: rlwimi({{
+            uint64_t res, mask;
+            mask = bitmask(maskBeg, maskEnd);
+            res = rotate(Rs, shift);
+            res = (res & mask) | (Ra & ~mask);
+            Ra = res;
+        }});
     }
 
     // There are a large number of instructions that have the same primary
