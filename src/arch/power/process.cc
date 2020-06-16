@@ -77,7 +77,10 @@ PowerProcess::initState()
 {
     Process::initState();
 
-    argsInit<uint32_t>(PageBytes);
+    if (objFile->getArch() == ::Loader::Power)
+        argsInit<uint32_t>(PageBytes);
+    else
+        argsInit<uint64_t>(PageBytes);
 }
 
 template <typename IntType>
@@ -86,6 +89,8 @@ PowerProcess::argsInit(int pageSize)
 {
     int intSize = sizeof(IntType);
     ByteOrder byteOrder = objFile->getByteOrder();
+    bool is64bit = (objFile->getArch() == ::Loader::Power64);
+    bool isLittleEndian = (byteOrder == LittleEndianByteOrder);
     std::vector<AuxVector<IntType>> auxv;
 
     string filename;
@@ -105,7 +110,15 @@ PowerProcess::argsInit(int pageSize)
     //Auxilliary vectors are loaded only for elf formatted executables.
     auto *elfObject = dynamic_cast<::Loader::ElfObject *>(objFile);
     if (elfObject) {
-        IntType features = 0;
+        IntType features = PPC_FEATURE_32;
+
+        // Check if running in 64-bit mode
+        if (is64bit)
+            features |= PPC_FEATURE_64;
+
+        // Check if running in little endian mode
+        if (isLittleEndian)
+            features |= PPC_FEATURE_PPC_LE | PPC_FEATURE_TRUE_LE;
 
         //Bits which describe the system hardware capabilities
         //XXX Figure out what these should be
@@ -277,7 +290,7 @@ PowerProcess::argsInit(int pageSize)
 
     //Set the machine status for a typical userspace
     Msr msr = 0;
-    msr.sf = (intSize == 8);
+    msr.sf = is64bit;
     msr.hv = 1;
     msr.ee = 1;
     msr.pr = 1;
@@ -285,10 +298,13 @@ PowerProcess::argsInit(int pageSize)
     msr.ir = 1;
     msr.dr = 1;
     msr.ri = 1;
-    msr.le = (byteOrder == LittleEndianByteOrder);
+    msr.le = isLittleEndian;
     tc->setMiscReg(MISCREG_MSR, msr);
 
-    tc->pcState(getStartPC());
+    auto pc = tc->pcState();
+    pc.set(getStartPC());
+    pc.byteOrder(byteOrder);
+    tc->pcState(pc);
 
     //Align the "stack_min" to a page boundary.
     memState->setStackMin(roundDown(stack_min, pageSize));
