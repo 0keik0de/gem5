@@ -130,7 +130,7 @@ SyscallDescTable<PowerProcess::SyscallABI> PowerLinuxProcess::syscallDescs = {
     { 30, "utime" },
     { 31, "stty" },
     { 32, "gtty" },
-    { 33, "access" },
+    { 33, "access", accessFunc },
     { 34, "nice" },
     { 35, "ftime" },
     { 36, "sync" },
