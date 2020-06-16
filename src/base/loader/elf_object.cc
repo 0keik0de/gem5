@@ -112,6 +112,7 @@ ElfObject::ElfObject(ImageFileDataPtr ifd) : ObjectFile(ifd)
 
     determineArch();
     determineOpSys();
+    determineByteOrder();
 
     entry = ehdr.e_entry;
     _programHeaderCount = ehdr.e_phnum;
@@ -321,6 +322,16 @@ ElfObject::determineOpSys()
             return;
         }
     }
+}
+
+void
+ElfObject::determineByteOrder()
+{
+    auto edata = ehdr.e_ident[EI_DATA];
+    if (edata == ELFDATANONE)
+        panic("invalid ELF data encoding");
+    byteOrder = (edata == ELFDATA2MSB) ?
+                BigEndianByteOrder : LittleEndianByteOrder;
 }
 
 void
