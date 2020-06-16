@@ -94,7 +94,40 @@ BitUnion32(ExtMachInst)
     Bitfield<19, 12> fxm;
 EndBitUnion(ExtMachInst)
 
-typedef GenericISA::SimplePCState<MachInst> PCState;
+class PCState : public GenericISA::SimplePCState<MachInst>
+{
+  private:
+    typedef GenericISA::SimplePCState<MachInst> Base;
+    ByteOrder guestByteOrder = ByteOrder::big;
+
+  public:
+    PCState()
+    {}
+
+    void
+    set(Addr val)
+    {
+        Base::set(val);
+        npc(val + sizeof(MachInst));
+    }
+
+    PCState(Addr val)
+    {
+        set(val);
+    }
+
+    ByteOrder
+    byteOrder() const
+    {
+        return guestByteOrder;
+    }
+
+    void
+    byteOrder(ByteOrder order)
+    {
+        guestByteOrder = order;
+    }
+};
 
 // typedef uint64_t LargestRead;
 // // Need to use 64 bits to make sure that read requests get handled properly
