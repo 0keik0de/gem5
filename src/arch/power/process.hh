@@ -50,7 +50,8 @@ class PowerProcess : public Process
     void initState() override;
 
   public:
-    void argsInit(int intSize, int pageSize);
+    template <typename IntType>
+    void argsInit(int pageSize);
 
     struct SyscallABI : public GenericSyscallABI64
     {
