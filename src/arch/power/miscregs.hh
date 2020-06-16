@@ -41,6 +41,7 @@ enum MiscRegIndex {
     MISCREG_LR,
     MISCREG_CTR,
     MISCREG_TAR,
+    MISCREG_MSR,
     NUM_MISCREGS
 };
 
@@ -50,7 +51,8 @@ const char * const miscRegName[NUM_MISCREGS] = {
     "XER",
     "LR",
     "CTR",
-    "TAR"
+    "TAR",
+    "MSR"
 };
 
 BitUnion32(Cr)
@@ -107,6 +109,26 @@ BitUnion32(Fpscr)
     Bitfield<2,1> rn;
 EndBitUnion(Fpscr)
 
+BitUnion64(Msr)
+    Bitfield<63> sf;
+    Bitfield<60> hv;
+    Bitfield<34, 33> ts;
+    Bitfield<32> tm;
+    Bitfield<25> vec;
+    Bitfield<23> vsx;
+    Bitfield<15> ee;
+    Bitfield<14> pr;
+    Bitfield<13> fp;
+    Bitfield<12> me;
+    Bitfield<11> fe0;
+    Bitfield<10, 9> te;
+    Bitfield<8> fe1;
+    Bitfield<5> ir;
+    Bitfield<4> dr;
+    Bitfield<2> pmm;
+    Bitfield<1> ri;
+    Bitfield<0> le;
+EndBitUnion(Msr)
 } // namespace PowerISA
 
 #endif // __ARCH_POWER_MISCREGS_HH__

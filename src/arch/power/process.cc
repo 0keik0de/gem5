@@ -275,6 +275,19 @@ PowerProcess::argsInit(int pageSize)
     //Set the stack pointer register
     tc->setIntReg(StackPointerReg, stack_min);
 
+    //Set the machine status for a typical userspace
+    Msr msr = 0;
+    msr.sf = (intSize == 8);
+    msr.hv = 1;
+    msr.ee = 1;
+    msr.pr = 1;
+    msr.me = 1;
+    msr.ir = 1;
+    msr.dr = 1;
+    msr.ri = 1;
+    msr.le = (byteOrder == LittleEndianByteOrder);
+    tc->setMiscReg(MISCREG_MSR, msr);
+
     tc->pcState(getStartPC());
 
     //Align the "stack_min" to a page boundary.
