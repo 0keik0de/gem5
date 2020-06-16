@@ -67,6 +67,7 @@ def operands {{
     'LR': ('ControlReg', 'ud', 'MISCREG_LR', 'IsInteger', 9),
     'CTR': ('ControlReg', 'ud', 'MISCREG_CTR', 'IsInteger', 9),
     'TAR': ('ControlReg', 'ud', 'MISCREG_TAR', 'IsInteger', 9),
+    'MSR': ('ControlReg', 'ud', 'MISCREG_MSR', 'IsInteger', 9),
 
     # Setting as ControlReg so things are stored as an integer, not double
     'FPSCR': ('ControlReg', 'uw', 'MISCREG_FPSCR', 'IsFloating', 9),

@@ -122,10 +122,12 @@ let {{
 
 # Check the condition register (CR) allows the branch to be taken.
 def GetCondCode(br_code):
-    cond_code =  'if (checkCond(CR)) {\n'
+    cond_code =  'Msr msr = MSR;\n'
+    cond_code += 'if (checkCond(CR)) {\n'
     cond_code += '    ' + br_code + '\n'
+    cond_code += '    NIA = msr.sf ? NIA : NIA & UINT32_MAX;\n'
     cond_code += '} else {\n'
-    cond_code += '    NIA = NIA;\n'
+    cond_code += '    NIA = msr.sf ? NIA : NIA & UINT32_MAX;\n'
     cond_code += '}\n'
     return cond_code
 
@@ -136,10 +138,12 @@ def GetCtrCondCode(br_code):
     cond_code =  'uint64_t ctr = CTR;\n'
     cond_code += 'bool ctrOk = checkCtr(ctr);\n'
     cond_code += 'bool condOk = checkCond(CR);\n'
+    cond_code += 'Msr msr = MSR;\n'
     cond_code += 'if (ctrOk && condOk) {\n'
     cond_code += '    ' + br_code + '\n'
+    cond_code += '    NIA = msr.sf ? NIA : NIA & UINT32_MAX;\n'
     cond_code += '} else {\n'
-    cond_code += '    NIA = NIA;\n'
+    cond_code += '    NIA = msr.sf ? NIA : NIA & UINT32_MAX;\n'
     cond_code += '}\n'
     cond_code += 'CTR = ctr;\n'
     return cond_code
