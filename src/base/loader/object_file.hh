@@ -52,6 +52,7 @@ enum Arch {
     Arm,
     Thumb,
     Power,
+    Power64,
     Riscv64,
     Riscv32
 };
@@ -62,6 +63,8 @@ enum OpSys {
     Linux,
     Solaris,
     LinuxArmOABI,
+    LinuxPower64ABIv1,
+    LinuxPower64ABIv2,
     FreeBSD
 };
 
@@ -72,7 +75,7 @@ class ObjectFile : public ImageFile
   protected:
     Arch arch = UnknownArch;
     OpSys opSys = UnknownOpSys;
-    ByteOrder byteOrder = LittleEndianByteOrder;
+    ByteOrder byteOrder = ByteOrder::little;
 
     SymbolTable _symtab;
 

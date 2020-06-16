@@ -53,7 +53,9 @@ class PowerLinuxObjectFileLoader : public Process::Loader
     Process *
     load(ProcessParams *params, ::Loader::ObjectFile *obj_file) override
     {
-        if (obj_file->getArch() != ::Loader::Power)
+        auto arch = obj_file->getArch();
+
+        if (arch != ::Loader::Power && arch != ::Loader::Power64)
             return nullptr;
 
         auto opsys = obj_file->getOpSys();
@@ -63,7 +65,10 @@ class PowerLinuxObjectFileLoader : public Process::Loader
             opsys = ::Loader::Linux;
         }
 
-        if (opsys != ::Loader::Linux)
+        if ((arch == ::Loader::Power && opsys != ::Loader::Linux) ||
+            (arch == ::Loader::Power64 &&
+             opsys != ::Loader::LinuxPower64ABIv1 &&
+             opsys != ::Loader::LinuxPower64ABIv2))
             return nullptr;
 
         return new PowerLinuxProcess(params, obj_file);
@@ -448,6 +453,51 @@ void
 PowerLinuxProcess::initState()
 {
     PowerProcess::initState();
+
+    // Fix up entry point and symbol table for 64-bit ELF ABI v1
+    if (objFile->getOpSys() != ::Loader::LinuxPower64ABIv1)
+        return;
+
+    // Fix entry point address and the base TOC pointer by looking the
+    // the function descriptor in the .opd section
+    Addr entryPoint, tocBase;
+    ByteOrder byteOrder = objFile->getByteOrder();
+    ThreadContext *tc = system->threads[contextIds[0]];
+
+    // The first doubleword of the descriptor contains the address of the
+    // entry point of the function
+    initVirtMem->readBlob(getStartPC(), &entryPoint, sizeof(Addr));
+
+    // Update the PC state
+    auto pc = tc->pcState();
+    pc.byteOrder(byteOrder);
+    pc.set(gtoh(entryPoint, byteOrder));
+    tc->pcState(pc);
+
+    // The second doubleword of the descriptor contains the TOC base
+    // address for the function
+    initVirtMem->readBlob(getStartPC() + 8, &tocBase, sizeof(Addr));
+    tc->setIntReg(TOCPointerReg, gtoh(tocBase, byteOrder));
+
+    // Fix symbol table entries as they would otherwise point to the
+    // function descriptor rather than the actual entry point address
+    auto *symbolTable = new ::Loader::SymbolTable;
+
+    for (auto sym : ::Loader::debugSymbolTable) {
+        Addr entry;
+        ::Loader::Symbol symbol = sym;
+
+        // Try to read entry point from function descriptor
+        if (initVirtMem->tryReadBlob(sym.address, &entry, sizeof(Addr)))
+            symbol.address = gtoh(entry, byteOrder);
+
+        symbolTable->insert(symbol);
+    }
+
+    // Replace the current debug symbol table
+    ::Loader::debugSymbolTable.clear();
+    ::Loader::debugSymbolTable.insert(*symbolTable);
+    delete symbolTable;
 }
 
 void
