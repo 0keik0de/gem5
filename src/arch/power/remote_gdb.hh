@@ -58,7 +58,9 @@ class RemoteGDB : public BaseRemoteGDB
             uint32_t lr;
             uint32_t ctr;
             uint32_t xer;
-        } r;
+            uint32_t fpscr;
+        } M5_ATTR_PACKED r;
+
       public:
         char *data() const { return (char *)&r; }
         size_t size() const { return sizeof(r); }
@@ -71,11 +73,48 @@ class RemoteGDB : public BaseRemoteGDB
         }
     };
 
-    PowerGdbRegCache regCache;
+    class Power64GdbRegCache : public BaseGdbRegCache
+    {
+      using BaseGdbRegCache::BaseGdbRegCache;
+      private:
+        struct {
+            uint64_t gpr[NumIntArchRegs];
+            uint64_t fpr[NumFloatArchRegs];
+            uint64_t pc;
+            uint64_t msr;
+            uint32_t cr;
+            uint64_t lr;
+            uint64_t ctr;
+            uint32_t xer;
+            uint32_t fpscr;
+        } M5_ATTR_PACKED r;
+
+      public:
+        char *data() const { return (char *)&r; }
+        size_t size() const { return sizeof(r); }
+        void getRegs(ThreadContext*);
+        void setRegs(ThreadContext*) const;
+        const std::string
+        name() const
+        {
+            return gdb->name() + ".Power64GdbRegCache";
+        }
+    };
+
+    PowerGdbRegCache regCache32;
+    Power64GdbRegCache regCache64;
 
   public:
     RemoteGDB(System *_system, ThreadContext *tc, int _port);
     BaseGdbRegCache *gdbRegs();
+
+    std::vector<std::string>
+    availableFeatures() const
+    {
+        return {"qXfer:features:read+"};
+    };
+
+    bool getXferFeaturesRead(const std::string &annex, std::string &output);
 };
 
 } // namespace PowerISA
