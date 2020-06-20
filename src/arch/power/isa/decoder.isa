@@ -720,6 +720,16 @@ decode PO default Unknown::unknown() {
             68: td({{ Ra }}, {{ Rb }});
         }
 
+        format IntOp {
+            576: mcrxrx({{
+                uint8_t res;
+                Xer xer = XER;
+                res = (xer.ov << 3) | (xer.ov32 << 2) |
+                      (xer.ca << 1) | xer.ca32;
+                CR = insertCRField(CR, BF, res);
+            }});
+        }
+
         format StoreIndexOp {
             663: stfsx({{ Mem_sf = Fs_sf; }});
             727: stfdx({{ Mem_df = Fs; }});
@@ -982,10 +992,26 @@ decode PO default Unknown::unknown() {
                                 }
                                 CR = (Rs & mask) | (CR & ~mask);
                             }});
+
+                            1: mtocrf({{
+                                int count = popCount(FXM);
+                                uint32_t mask = 0xf << (4 * findMsbSet(FXM));
+                                if (count == 1) {
+                                    CR = (Rs & mask) | (CR & ~mask);
+                                }
+                            }});
                         }
 
                         19: decode S {
                             0: mfcr({{ Rt = CR; }});
+
+                            1: mfocrf({{
+                                int count = popCount(FXM);
+                                uint64_t mask = 0xf << (4 * findMsbSet(FXM));
+                                if (count == 1) {
+                                    Rt = CR & mask;
+                                }
+                            }});
                         }
                     }
                 }
