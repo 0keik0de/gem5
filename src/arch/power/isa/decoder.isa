@@ -209,6 +209,11 @@ decode PO default Unknown::unknown() {
         }});
     }
 
+    format IntImmTrapOp {
+        3: twi({{ Ra_sw }});
+        2: tdi({{ Ra }});
+    }
+
     4: decode VA_XO {
 
         // Arithmetic instructions that use source registers Ra, Rb and Rc,
@@ -708,6 +713,11 @@ decode PO default Unknown::unknown() {
                 Ra = res;
             }},
             true);
+        }
+
+        format IntTrapOp {
+            4: tw({{ Ra_sw }}, {{ Rb_sw }});
+            68: td({{ Ra }}, {{ Rb }});
         }
 
         format StoreIndexOp {
