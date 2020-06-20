@@ -733,6 +733,82 @@ class IntConcatRotateOp : public IntConcatShiftOp
             Addr pc, const Loader::SymbolTable *symtab) const override;
 };
 
+
+/**
+ * Class for integer trap operations.
+ */
+class IntTrapOp : public IntOp
+{
+  protected:
+    uint8_t tcond;
+
+    /// Constructor
+    IntTrapOp(const char *mnem, MachInst _machInst, OpClass __opClass)
+      : IntOp(mnem, _machInst, __opClass),
+        tcond(machInst.to)
+    {
+    }
+
+    inline bool
+    checkTrap(int64_t ra, int64_t rb) const
+    {
+        if (((tcond & 0x10) && (ra < rb))  ||
+            ((tcond & 0x08) && (ra > rb))  ||
+            ((tcond & 0x04) && (ra == rb)) ||
+            ((tcond & 0x02) && ((uint64_t)ra < (uint64_t)rb)) ||
+            ((tcond & 0x01) && ((uint64_t)ra > (uint64_t)rb))) {
+            return true;
+        }
+
+        return false;
+    }
+
+    inline std::string
+    suffix() const
+    {
+        std::string str;
+
+        switch (tcond) {
+            case 1:  str = "lgt"; break;
+            case 2:  str = "llt"; break;
+            case 4:  str = "eq"; break;
+            case 5:  str = "lge"; break;
+            case 6:  str = "lle"; break;
+            case 8:  str = "gt"; break;
+            case 12: str = "ge"; break;
+            case 16: str = "lt"; break;
+            case 20: str = "le"; break;
+            case 24: str = "ne"; break;
+            case 31: str = "u"; break;
+        }
+
+        return str;
+    }
+
+    std::string generateDisassembly(
+            Addr pc, const Loader::SymbolTable *symtab) const override;
+};
+
+
+/**
+ * Class for integer immediate trap operations.
+ */
+class IntImmTrapOp : public IntTrapOp
+{
+  protected:
+    int16_t simm;
+
+   /// Constructor
+   IntImmTrapOp(const char *mnem, MachInst _machInst, OpClass __opClass)
+      : IntTrapOp(mnem, _machInst, __opClass),
+        simm((int16_t)machInst.si)
+    {
+    }
+
+    std::string generateDisassembly(
+            Addr pc, const Loader::SymbolTable *symtab) const override;
+};
+
 } // namespace PowerISA
 
 #endif //__ARCH_POWER_INSTS_INTEGER_HH__

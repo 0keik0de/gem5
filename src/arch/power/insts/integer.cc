@@ -879,3 +879,103 @@ IntConcatRotateOp::generateDisassembly(
 
     return ss.str();
 }
+
+
+string
+IntTrapOp::generateDisassembly(
+        Addr pc, const Loader::SymbolTable *symtab) const
+{
+    string ext;
+    stringstream ss;
+    bool printSrcs = true;
+    bool printCond = false;
+
+    // Generate the correct mnemonic
+    string myMnemonic(mnemonic);
+
+    // Special cases
+    if (!myMnemonic.compare("tw") &&
+        (_srcRegIdx[0].index() == 0) && (_srcRegIdx[1].index() == 0)) {
+        myMnemonic = "trap";
+        printSrcs = false;
+    } else {
+        ext = suffix();
+        if (!ext.empty() &&
+            (!myMnemonic.compare("tw") || !myMnemonic.compare("td"))) {
+            myMnemonic += ext;
+        } else {
+            printCond = true;
+        }
+    }
+
+    ccprintf(ss, "%-10s ", myMnemonic);
+
+    // Print the trap condition
+    if (printCond) {
+        ss << unsigned(tcond);
+    }
+
+    // Print the source registers
+    if (printSrcs) {
+        if (_numSrcRegs > 0) {
+            if (printCond) {
+                ss << ", ";
+            }
+            printReg(ss, _srcRegIdx[0]);
+        }
+
+        if (_numSrcRegs > 1) {
+            ss << ", ";
+            printReg(ss, _srcRegIdx[1]);
+        }
+    }
+
+    return ss.str();
+}
+
+
+string
+IntImmTrapOp::generateDisassembly(
+        Addr pc, const Loader::SymbolTable *symtab) const
+{
+    string ext;
+    stringstream ss;
+    bool printCond = false;
+
+    // Generate the correct mnemonic
+    string myMnemonic(mnemonic);
+
+    // Special cases
+    ext = suffix();
+    if (!ext.empty()) {
+        if (!myMnemonic.compare("twi")) {
+            myMnemonic = "tw" + ext + "i";
+        } else if (!myMnemonic.compare("tdi")) {
+            myMnemonic = "td" + ext + "i";
+        } else {
+            printCond = true;
+        }
+    } else {
+        printCond = true;
+    }
+
+    ccprintf(ss, "%-10s ", myMnemonic);
+
+    // Print the trap condition
+    if (printCond) {
+        ss << unsigned(tcond);
+    }
+
+    // Print the source registers
+    if (_numSrcRegs > 0) {
+        if (printCond) {
+            ss << ", ";
+        }
+        printReg(ss, _srcRegIdx[0]);
+    }
+
+    // Print the immediate value
+    ss << ", " << simm;
+
+    return ss.str();
+}
