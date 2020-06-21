@@ -201,12 +201,20 @@ def format BranchRegCondOp(code, checkCTR = 0, inst_flags = []) {{
         inst_flags_lk1 += [ 'IsCall' ]
 
     # Generate the classes
-    (header_output, decoder_output, decode_block, exec_output) = \
-        GenAluOp(name, Name, 'BranchRegCondOp', code, inst_flags,
-                 CheckLkDecode, BasicConstructor)
-    (header_output_lk1, decoder_output_lk1, _, exec_output_lk1) = \
-        GenAluOp(name, Name + 'LkSet', 'BranchRegCondOp', code_lk1,
-                 inst_flags_lk1, CheckLkDecode, BranchLkConstructor)
+    if checkCTR:
+        (header_output, decoder_output, decode_block, exec_output) = \
+            GenAluOp(name, Name, 'BranchRegCondOp', code, inst_flags,
+                     CheckLkDecode, BasicConstructor)
+        (header_output_lk1, decoder_output_lk1, _, exec_output_lk1) = \
+            GenAluOp(name, Name + 'LkSet', 'BranchRegCondOp', code_lk1,
+                     inst_flags_lk1, CheckLkDecode, BranchLkConstructor)
+    else:
+        (header_output, decoder_output, decode_block, exec_output) = \
+            GenAluOp(name, Name, 'BranchRegCondOp', code, inst_flags,
+                     CheckBoLkDecode, BasicConstructor)
+        (header_output_lk1, decoder_output_lk1, _, exec_output_lk1) = \
+            GenAluOp(name, Name + 'LkSet', 'BranchRegCondOp', code_lk1,
+                     inst_flags_lk1, CheckBoLkDecode, BranchLkConstructor)
 
     # Finally, add to the other outputs
     header_output += header_output_lk1
