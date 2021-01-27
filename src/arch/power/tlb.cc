@@ -64,6 +64,8 @@ TLB::TLB(const Params *p)
     table = new PowerISA::PTE[size];
     memset(table, 0, sizeof(PowerISA::PTE[size]));
     smallPages = 0;
+    hashtable = new Data[size];
+    tableSize = size;
 }
 
 TLB::~TLB()
@@ -175,9 +177,48 @@ TLB::insertAt(PowerISA::PTE &pte, unsigned Index, int _smallPages)
 
 // insert a new TLB entry
 void
-TLB::insert(Addr addr, PowerISA::PTE &pte)
+TLB::insert(Addr vAddr, Addr pAddr, ThreadContext *tc)
 {
-    fatal("TLB Insert not yet implemented\n");
+    struct Data* val = lookupAtHash(vAddr);
+    if (val != NULL){
+        return;
+    }
+    else{
+        struct Data* newentry = new Data;
+        newentry->vAddr = vAddr;
+        newentry->tc = tc;
+        newentry->pAddr = pAddr;
+        int index = vAddr % tableSize;
+        if (&hashtable[index] == NULL){
+            hashtable[index] = *newentry;
+        }
+        else{
+            index = (index + 1) % tableSize;
+            while (index != vAddr % tableSize){
+                if (&hashtable[index] == NULL){
+                    hashtable[index] = *newentry;
+                    break;
+                }
+                else{
+                    index = (index + 1) % tableSize;
+                }
+            }
+            // If table is fully occupied
+            if (index == vAddr % tableSize){
+                hashtable[index] = *newentry;
+            }
+        }
+    }
+}
+
+Data*
+TLB::lookupAtHash(Addr vAddr){
+    for (int i=0;i<tableSize;i++){
+        if (hashtable[i].vAddr == vAddr){
+            return &hashtable[i];
+        }
+    }
+    return NULL;
 }
 
 void
@@ -259,7 +300,31 @@ TLB::translateTiming(const RequestPtr &req, ThreadContext *tc,
                      Translation *translation, Mode mode)
 {
     assert(translation);
-    translation->finish(translateAtomic(req, tc, mode), req, tc, mode);
+    Addr vaddr = req->getVaddr();
+    DPRINTF(TLB, "Translating vaddr %#x.\n", vaddr);
+
+    Addr vaddrMasked = vaddr & (~(PageBytes - 1));
+    struct Data* entry = lookupAtHash(vaddrMasked);
+
+    if (entry){
+        DPRINTF(TLB, "TLB hit\n");
+        Addr paddr = entry->pAddr | (vaddr & (PageBytes - 1));
+        req->setPaddr(paddr);
+        DPRINTF(TLB, "Translated %#x -> %#x.\n", vaddr, req->getPaddr());
+        translation->finish(NoFault, req, tc, mode);
+    } else {
+        DPRINTF(TLB, "TLB miss\n");
+        Fault fault = translateAtomic(req, tc, mode);
+
+        if (fault == NoFault){
+            Addr paddrMasked = req->getPaddr() & (~(PageBytes - 1));
+            insert(vaddrMasked, paddrMasked, tc);
+            DPRINTF(TLB, "Translated %#x -> %#x.\n", vaddr, req->getPaddr());
+        } else {
+            DPRINTF(TLB, "Invalid Vadddr\n");
+        }
+        translation->finish(fault, req, tc, mode);
+    }
 }
 
 Fault
